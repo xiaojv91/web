@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>yh官网</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        /* 核心：全局平滑滚动 */
+        html {
+            scroll-behavior: smooth;
+        }
+        /* 导航固定在顶部，苹果官网风格 + 橄榄胶囊滑块 */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            padding: 12px 20px;
+            background-color: #ffffff;
+            z-index: 999;
+        }
+        .nav img {
+            height: 20px;
+        }
+        .nav-menu {
+            position: relative; /* 给胶囊滑块做定位父级 */
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+        }
+        /* ✅橄榄胶囊滑块（独立圆角块，不是伪元素下划线） */
+        .pill-slider {
+            position: absolute;
+            bottom: -6px;
+            height: 4px;
+            background-color: #0071e3;
+            border-radius: 999px; /* 999px实现橄榄胶囊圆角 */
+            transition: left 0.35s cubic-bezier(0.4,0,0.2,1), width 0.35s cubic-bezier(0.4,0,0.2,1);
+            z-index: 0;
+        }
+        .nav-menu a {
+            position: relative;
+            z-index: 1; /* 文字盖在滑块上面 */
+            text-decoration: none;
+            color: #333;
+            font-size: 14px;
+            padding:4px 0;
+        }
+        .nav-menu a:hover {
+            color: #0071e3;
+        }
+        .nav-menu a.active {
+            color:#0071e3;
+        }
+        /* 给每个板块预留顶部距离，避免被固定导航挡住 */
+        section {
+            scroll-margin-top: 60px;
+        }
+        /* banner背景图 —— 不裁剪版本 */
+        .banner {
+            width: 100%;
+            height: 100vh;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: #f5f5f7;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+        }
+        .top-title {
+            margin-top: 60px;
+            text-align: center;
+            padding: 8px 0;
+        }
+
+        /* ==========苹果高端链接按钮【进一步了解】========== */
+        .more-link-wrap{
+            text-align: center;
+            margin:24px 0 48px;
+        }
+        .more-link{
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size:17px;
+            color:#0071e3;
+            text-decoration: none;
+            transition: all 0.25s ease;
+            display: inline‑block;
+        }
+        .more-link:hover{
+            color:#0077ed;
+            /* 轻微右移，苹果交互小细节 */
+            transform: translateX(3px);
+        }
+    </style>
+</head>
+<body>
+    <!-- 固定导航 -->
+    <div class="nav">
+        <img src="images/logo.png" alt="logo">
+        <div class="nav-menu">
+            <!-- 橄榄胶囊滑块元素 -->
+            <div class="pill-slider"></div>
+            <a href="#top">首页</a>
+            <a href="#hite">Hite系列</a>
+            <a href="#your">Your系列</a>
+            <a href="#horizon">Horizon</a>
+            <a href="#news">资讯</a>
+        </div>
+    </div>
+    <!-- 顶部锚点 首页 -->
+    <div id="top" class="top-title">
+        <strong>yh官网</strong>
+    </div>
+    <div class="banner" style="background-image: url('images/pages.png');"></div>
+    <!-- Hite系列板块 -->
+    <section id="hite">
+        <h2>HiteBook系列</h2>
+        <div class="banner" style="background-image: url('images/hitebook3.png');"></div>
+        <!-- ✅替换成新版高端按钮 -->
+        <div class="more-link-wrap">
+            <a class="more-link" href="hite.html">进一步了解 ›</a>
+        </div>
+    </section>
+    <!-- Your系列板块 -->
+    <section id="your">
+        <h2>Your系列</h2>
+        <div class="banner"></div>
+    </section>
+    <!-- Horizon板块 -->
+    <section id="horizon">
+        <h2>Horizon</h2>
+        <div class="banner"></div>
+    </section>
+    <!-- 资讯板块 -->
+    <section id="news">
+        <h2>资讯</h2>
+        <div class="banner"></div>
+    </section>
+
+<script>
+const navMenu = document.querySelector('.nav-menu');
+const pillSlider = document.querySelector('.pill-slider');
+const navLinks = document.querySelectorAll('.nav-menu a');
+
+// 收集锚点与链接对应关系
+const sections = [];
+navLinks.forEach(link=>{
+    const id = link.getAttribute('href').replace('#','');
+    const el = document.getElementById(id);
+    if(el) sections.push({link, el});
+})
+
+// 更新胶囊滑块位置&宽度核心函数
+function updatePill(targetLink){
+    if(!targetLink) return;
+    const menuRect = navMenu.getBoundingClientRect();
+    const linkRect = targetLink.getBoundingClientRect();
+    pillSlider.style.left = `${linkRect.left - menuRect.left}px`;
+    pillSlider.style.width = `${linkRect.width}px`;
+}
+
+// 滚动时，设置激活项，并且移动橄榄滑块
+function setActiveMenu(){
+    let currentItem = null;
+    sections.forEach(item=>{
+        const rect = item.el.getBoundingClientRect();
+        if(rect.top <= 120){
+            currentItem = item;
+        }
+    })
+    navLinks.forEach(link=>link.classList.remove('active'));
+    if(currentItem){
+        currentItem.link.classList.add('active');
+        updatePill(currentItem.link);
+    }
+}
+
+// 点击导航，立刻更新滑块
+navLinks.forEach(link=>{
+    link.addEventListener('click',()=>{
+        setTimeout(()=>updatePill(link),100);
+    })
+})
+
+// 页面加载、窗口大小变化，重新计算滑块位置
+window.addEventListener('load',setActiveMenu);
+window.addEventListener('scroll',setActiveMenu);
+window.addEventListener('resize',setActiveMenu);
+setActiveMenu();
+</script>
+</body>
+</html>
